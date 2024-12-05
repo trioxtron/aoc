@@ -24,27 +24,34 @@ vector<string> splitString(string str, string del) {
 }
 
 
-int isCorrect(vector<string> update, map<string, vector<string> > rules, int idx = 0) {
-
+int isCorrect(vector<string> update, map<string, vector<string> > rules, vector<string> ordered = {}, int idx = 0) {
     for (int i = 0; i < update.size() - 1; i++) {
         if (rules.find(update[i]) == rules.end()) {
             return 0;
         }
-        int j = i+1;
         for (int j = i+1; j < update.size(); j++) {
             vector<string> values = rules[update[j]];
             for (int k = 0; k < values.size(); k++) {
                 if (values[k] == update[i]) {
                     swap(update[i], update[j]);
-                    return isCorrect(update, rules, idx+1);
+                    return isCorrect(update, rules, ordered, idx+1);
                 }
             }
         }
+        ordered.push_back(update[i]);
+        update.erase(update.begin() + i);
+        i--;
     }
+
+    for (int i = 0; i < update.size(); i++) {
+        ordered.push_back(update[i]);
+    }
+
     if (idx == 0) {
         return 0;
     }
-    return stoi(update[(update.size() - 1) / 2]);
+
+    return stoi(ordered[(ordered.size() - 1) / 2]);
 } 
 
 void printMap(map<string, vector<string> > rules) {
@@ -65,7 +72,6 @@ int main() {
     vector<string> update;
     bool isUpdate = false;
     int result = 0;
-    int idx = 0;
 
     if (file.is_open()) {
         while (getline(file, line)) {
@@ -90,9 +96,6 @@ int main() {
 
             int middle = isCorrect(update, rules);
             result += middle;
-            if (middle != 0) {
-                idx++;
-            }
         }
 
         // printMap(rules);
